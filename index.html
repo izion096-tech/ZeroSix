@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPL Chess</title>
+
+<style>
+body{
+margin:0;
+background:#081c15;
+font-family:Arial,sans-serif;
+color:white;
+text-align:center;
+}
+
+h1{
+margin:20px;
+color:#ffd700;
+}
+
+#turn{
+font-size:20px;
+margin-bottom:15px;
+}
+
+#board{
+width:640px;
+height:640px;
+margin:0 auto;
+display:grid;
+grid-template-columns:repeat(8,1fr);
+border:5px solid gold;
+}
+
+.square{
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:42px;
+cursor:pointer;
+}
+
+.light{
+background:#95d5b2;
+}
+
+.dark{
+background:#2d6a4f;
+}
+
+.selected{
+outline:4px solid yellow;
+}
+
+.arsenal{
+color:#ff4d4d;
+}
+
+.city{
+color:#4da6ff;
+}
+
+button{
+margin-top:20px;
+padding:10px 20px;
+font-size:16px;
+font-weight:bold;
+border:none;
+border-radius:6px;
+background:gold;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>⚽ EPL CHESS ♟️</h1>
+<div id="turn">Arsenal Turn</div>
+
+<div id="board"></div>
+
+<button onclick="resetGame()">New Match</button>
+
+<script>
+
+const boardEl=document.getElementById("board");
+const turnEl=document.getElementById("turn");
+
+let currentPlayer="arsenal";
+let selected=null;
+
+const pieces={
+king:"👔",
+queen:"⚽",
+rook:"🛡️",
+bishop:"🎯",
+knight:"⚡",
+pawn:"👟"
+};
+
+let board=[];
+
+function startPosition(){
+return[
+[
+{team:"city",type:"rook"},
+{team:"city",type:"knight"},
+{team:"city",type:"bishop"},
+{team:"city",type:"queen"},
+{team:"city",type:"king"},
+{team:"city",type:"bishop"},
+{team:"city",type:"knight"},
+{team:"city",type:"rook"}
+],
+Array(8).fill().map(()=>({team:"city",type:"pawn"})),
+Array(8).fill(null),
+Array(8).fill(null),
+Array(8).fill(null),
+Array(8).fill(null),
+Array(8).fill().map(()=>({team:"arsenal",type:"pawn"})),
+[
+{team:"arsenal",type:"rook"},
+{team:"arsenal",type:"knight"},
+{team:"arsenal",type:"bishop"},
+{team:"arsenal",type:"queen"},
+{team:"arsenal",type:"king"},
+{team:"arsenal",type:"bishop"},
+{team:"arsenal",type:"knight"},
+{team:"arsenal",type:"rook"}
+]
+];
+}
+
+function resetGame(){
+board=startPosition();
+selected=null;
+currentPlayer="arsenal";
+drawBoard();
+updateTurn();
+}
+
+function updateTurn(){
+turnEl.textContent=
+currentPlayer==="arsenal"
+?"🔴 Arsenal Turn"
+:"🔵 Manchester City Turn";
+}
+
+function drawBoard(){
+
+boardEl.innerHTML="";
+
+for(let r=0;r<8;r++){
+for(let c=0;c<8;c++){
+
+const sq=document.createElement("div");
+
+sq.className="square "+(((r+c)%2===0)?"light":"dark");
+
+if(selected && selected.row===r && selected.col===c){
+sq.classList.add("selected");
+}
+
+const piece=board[r][c];
+
+if(piece){
+sq.textContent=pieces[piece.type];
+sq.classList.add(piece.team);
+}
+
+sq.dataset.row=r;
+sq.dataset.col=c;
+
+sq.onclick=clickSquare;
+
+boardEl.appendChild(sq);
+
+}
+}
+
+}
+
+function clickSquare(){
+
+const row=parseInt(this.dataset.row);
+const col=parseInt(this.dataset.col);
+
+const target=board[row][col];
+
+if(selected===null){
+
+if(target && target.team===currentPlayer){
+selected={row,col};
+drawBoard();
+}
+
+return;
+}
+
+const fromRow=selected.row;
+const fromCol=selected.col;
+const moving=board[fromRow][fromCol];
+
+if(target && target.team===moving.team){
+selected=null;
+drawBoard();
+return;
+}
+
+if(target && target.type==="king"){
+
+alert(
+moving.team==="arsenal"
+?"🏆 ARSENAL WIN!"
+:"🏆 MANCHESTER CITY WIN!"
+);
+
+resetGame();
+return;
+}
+
+board[row][col]=moving;
+board[fromRow][fromCol]=null;
+
+currentPlayer=
+currentPlayer==="arsenal"
+?"city"
+:"arsenal";
+
+selected=null;
+
+updateTurn();
+drawBoard();
+}
+
+resetGame();
+
+</script>
+
+</body>
+</html>
